@@ -1,2 +1,19 @@
-# stub so root CMakeLists can add_subdirectory(tests) without failing
-# milestone 5: fetch catch2, add test_messages.cpp, wire ctest
+# catch2 via fetchcontent — no system install needed
+include(FetchContent)
+
+FetchContent_Declare(
+  Catch2
+  GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+  GIT_TAG        v3.5.4
+)
+FetchContent_MakeAvailable(Catch2)
+
+add_executable(exchange_tests
+  test_messages.cpp
+)
+target_link_libraries(exchange_tests PRIVATE exchange_core Catch2::Catch2WithMain)
+set_project_warnings(exchange_tests)
+
+include(CTest)
+include(Catch)
+catch_discover_tests(exchange_tests)
