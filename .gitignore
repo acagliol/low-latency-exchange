@@ -18,6 +18,5 @@ compile_commands.json
 # test output
 Testing/
 
-# personal session logs — folder stays, contents not tracked
-log/*
-!log/.gitkeep
+# personal notes — one file per day (log/day01.md, log/day02.md, ...)
+log/
