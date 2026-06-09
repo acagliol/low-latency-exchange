@@ -11,7 +11,7 @@ C++20 electronic exchange skeleton with optional FPGA acceleration (later).
 
 ## status
 
-- [x] day 1: skeleton, types, wire protocol, tests
+- [x] skeleton, types, wire protocol, tests
 - [ ] market data feed handler
 - [ ] limit order book
 - [ ] matching engine
