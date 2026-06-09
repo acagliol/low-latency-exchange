@@ -1,0 +1,19 @@
+# build
+build/
+cmake-build-*/
+out/
+
+# ide
+.vscode/
+.idea/
+*.user
+
+# artifacts
+*.o
+*.a
+*.so
+*.exe
+compile_commands.json
+
+# test output
+Testing/
