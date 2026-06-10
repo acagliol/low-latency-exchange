@@ -19,9 +19,14 @@ target_include_directories(exchange_core INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
+# compiled exchange logic (book, matcher, feed — grows over time)
+add_library(exchange_lib STATIC src/order_book.cpp)
+target_link_libraries(exchange_lib PUBLIC exchange_core)
+set_project_warnings(exchange_lib)
+
 # main binary — will grow into process entry point later
 add_executable(latency_exchange src/main.cpp)
-target_link_libraries(latency_exchange PRIVATE exchange_core)
+target_link_libraries(latency_exchange PRIVATE exchange_lib)
 set_project_warnings(latency_exchange)
 
 enable_testing()
