@@ -16,7 +16,11 @@
 //   - BBO cached or computed from best level in each map
 
 #include <cstddef>
+#include <cstdint>
+#include <list>
+#include <map>
 #include <optional>
+#include <unordered_map>
 
 #include "exchange/order.hpp"
 #include "exchange/types.hpp"
@@ -27,16 +31,15 @@ class OrderBook {
 public:
     // insert a resting limit order
     // returns false if order is invalid (market order, zero qty, duplicate id, etc.)
-    // day 3: actually inserts into price level
     bool add(const Order& order);
 
     // remove an order by id
     // returns false if id not found
-    // day 3: O(1) via order id index
+    // O(1) via order id index
     bool cancel(OrderId id);
 
     // change price and/or qty on an existing order
-    // day 3: cancel-replace semantics (remove from old level, insert at new)
+    // cancel-replace semantics (remove from old level, insert at new)
     bool modify(OrderId id, Price new_price, Qty new_qty);
 
     // best bid = highest buy price on the book (nullopt if no bids)
@@ -49,6 +52,32 @@ public:
     // e.g. bids at 100 and 99 = 2 bid levels
     std::size_t bid_levels() const;
     std::size_t ask_levels() const;
+
+private:
+    // one price level — FIFO list of orders = time priority (earliest at front)
+    // std::list so we can erase any order in O(1) without moving the others
+    using Level = std::list<Order>;
+
+    // a whole side, keyed by price and kept sorted by the map
+    //   bids: best = highest price = rbegin()
+    //   asks: best = lowest price  = begin()
+    using SideMap = std::map<Price, Level>;
+
+    // where an order lives, so cancel/modify can jump straight to it
+    struct Location {
+        Side            side;
+        Price           price;
+        Level::iterator it;  // stays valid because Level is a std::list
+    };
+
+    SideMap bids_;
+    SideMap asks_;
+
+    // order id (raw uint64) -> location, for O(1) lookup
+    std::unordered_map<std::uint64_t, Location> index_;
+
+    // pick the right side map for a buy/sell
+    SideMap& side_map(Side side) { return side == Side::Buy ? bids_ : asks_; }
 };
 
 }  // namespace exchange
