@@ -53,6 +53,13 @@ public:
     std::size_t bid_levels() const;
     std::size_t ask_levels() const;
 
+    // total resting quantity at one price level (0 if no such level)
+    // this is "depth" — how much size sits at a given price
+    Qty qty_at_price(Side side, Price price) const;
+
+    // total number of live orders across the whole book
+    std::size_t order_count() const;
+
 private:
     // one price level — FIFO list of orders = time priority (earliest at front)
     // std::list so we can erase any order in O(1) without moving the others
@@ -78,6 +85,7 @@ private:
 
     // pick the right side map for a buy/sell
     SideMap& side_map(Side side) { return side == Side::Buy ? bids_ : asks_; }
+    const SideMap& side_map(Side side) const { return side == Side::Buy ? bids_ : asks_; }
 };
 
 }  // namespace exchange
