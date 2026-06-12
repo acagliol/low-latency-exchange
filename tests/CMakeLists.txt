@@ -14,6 +14,8 @@ add_executable(exchange_tests
   test_timestamp.cpp
   test_order.cpp
   test_order_book.cpp
+  test_trade.cpp
+  test_matching.cpp
 )
 target_link_libraries(exchange_tests PRIVATE exchange_lib Catch2::Catch2WithMain)
 set_project_warnings(exchange_tests)
