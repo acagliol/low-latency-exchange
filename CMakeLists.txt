@@ -20,7 +20,10 @@ target_include_directories(exchange_core INTERFACE
 )
 
 # compiled exchange logic (book, matcher, feed — grows over time)
-add_library(exchange_lib STATIC src/order_book.cpp)
+add_library(exchange_lib STATIC
+  src/order_book.cpp
+  src/matching_engine.cpp
+)
 target_link_libraries(exchange_lib PUBLIC exchange_core)
 set_project_warnings(exchange_lib)
 
