@@ -60,6 +60,25 @@ public:
     // total number of live orders across the whole book
     std::size_t order_count() const;
 
+    // --- matching support (used by MatchingEngine) ---
+    // these expose just enough to walk the best level without leaking containers
+
+    // is there any order resting on this side?
+    bool has_side(Side side) const;
+
+    // best price on a side (precondition: has_side(side) is true)
+    //   buy side  -> highest bid
+    //   sell side -> lowest ask
+    Price best_price(Side side) const;
+
+    // oldest order at the best price (front of the fifo level)
+    OrderId front_id(Side side) const;
+    Qty     front_remaining(Side side) const;
+
+    // reduce the oldest order at the best price by `filled`
+    // if it reaches zero it is removed from the book and the index
+    void fill_front(Side side, Qty filled);
+
 private:
     // one price level — FIFO list of orders = time priority (earliest at front)
     // std::list so we can erase any order in O(1) without moving the others

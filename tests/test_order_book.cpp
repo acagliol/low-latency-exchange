@@ -125,6 +125,35 @@ TEST_CASE("modify changes price and qty via cancel-replace", "[orderbook]") {
     REQUIRE_FALSE(book.modify(OrderId{999}, Price{50}, Qty{1}));
 }
 
+TEST_CASE("matching support exposes best level", "[orderbook]") {
+    LOG_TEST("matching support exposes best level");
+    OrderBook book;
+
+    REQUIRE_FALSE(book.has_side(Side::Buy));
+
+    book.add(Order::from_new_order(OrderId{1}, Side::Buy, OrderType::Limit, Price{100}, Qty{5}, now()));
+    book.add(Order::from_new_order(OrderId{2}, Side::Buy, OrderType::Limit, Price{100}, Qty{7}, now()));
+
+    REQUIRE(book.has_side(Side::Buy));
+    REQUIRE(book.best_price(Side::Buy).value == 100);
+
+    // oldest at the level is order 1 (added first)
+    LOG_KV("front_id", book.front_id(Side::Buy).value);
+    REQUIRE(book.front_id(Side::Buy).value == 1);
+    REQUIRE(book.front_remaining(Side::Buy).value == 5);
+
+    // partially fill the front order
+    book.fill_front(Side::Buy, Qty{3});
+    LOG_KV("front_remaining after fill 3", book.front_remaining(Side::Buy).value);
+    REQUIRE(book.front_remaining(Side::Buy).value == 2);
+
+    // finish it off — front should advance to order 2
+    book.fill_front(Side::Buy, Qty{2});
+    LOG_KV("front_id after order1 done", book.front_id(Side::Buy).value);
+    REQUIRE(book.front_id(Side::Buy).value == 2);
+    REQUIRE(book.order_count() == 1);
+}
+
 TEST_CASE("orders at same price keep fifo time priority", "[orderbook]") {
     LOG_TEST("fifo time priority at one level");
     OrderBook book;

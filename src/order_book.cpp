@@ -134,4 +134,43 @@ std::size_t OrderBook::order_count() const {
     return index_.size();
 }
 
+bool OrderBook::has_side(Side side) const {
+    return !side_map(side).empty();
+}
+
+Price OrderBook::best_price(Side side) const {
+    const SideMap& book = side_map(side);
+    // buy: highest price (last key). sell: lowest price (first key).
+    return side == Side::Buy ? book.rbegin()->first : book.begin()->first;
+}
+
+OrderId OrderBook::front_id(Side side) const {
+    const Price p = best_price(side);
+    return side_map(side).at(p).front().id;
+}
+
+Qty OrderBook::front_remaining(Side side) const {
+    const Price p = best_price(side);
+    return side_map(side).at(p).front().remaining;
+}
+
+void OrderBook::fill_front(Side side, Qty filled) {
+    SideMap& book = side_map(side);
+    const Price p = best_price(side);
+    auto level_it = book.find(p);
+    Level& level  = level_it->second;
+
+    Order& front = level.front();
+    front.remaining.value -= filled.value;
+
+    // fully filled — evict from book and index
+    if (front.remaining.value <= 0) {
+        index_.erase(front.id.value);
+        level.pop_front();
+        if (level.empty()) {
+            book.erase(level_it);
+        }
+    }
+}
+
 }  // namespace exchange
